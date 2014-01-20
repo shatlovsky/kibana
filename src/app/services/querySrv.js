@@ -217,6 +217,8 @@ function (angular, _, config, kbn) {
         return _.pluck(_.where(self.list,{pin:false,enable:true}),'id');
       case 'selected':
         return _.intersection(_.pluck(_.where(self.list,{enable:true}),'id'),config.ids);
+      case 'by tags':
+        return _.pluck(_.filter(self.list,function(q){ return _.intersection(config.tags, q.tags).length > 0; }),'id');
       default:
         return _.pluck(_.where(self.list,{enable:true}),'id');
       }

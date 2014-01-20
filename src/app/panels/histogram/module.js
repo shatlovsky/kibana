@@ -111,7 +111,8 @@ function (angular, app, $, _, kbn, moment, timeSeries, numeral) {
        */
       queries     : {
         mode        : 'all',
-        ids         : []
+        ids         : [],
+        tags        : []
       },
       /** @scratch /panels/histogram/3
        * ==== Annotations

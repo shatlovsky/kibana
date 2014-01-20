@@ -15,6 +15,7 @@
 
     <label class="small">Legend value</label>
     <input type="text" ng-model="querySrv.list[id].alias" placeholder="Alias...">
+    <input type="text" ng-model="querySrv.list[id].tags" ng-list placeholder='Tags, comma separated...' class="input-query-tags" />
   </fieldset>
 
   <div ng-include src="queryConfig(querySrv.list[id].type)"></div>
