@@ -31,6 +31,13 @@ function (angular, app, _, kbn, moment) {
           icon: "icon-info-sign",
           partial: "app/partials/inspector.html",
           show: $scope.panel.spyable
+        },
+        {
+          description: "CSV",
+          icon: "icon-table",
+          partial: "app/partials/csv.html",
+          show: true,
+          click: function() { $scope.csv_data = $scope.to_csv(); }
         }
       ],
       editorTabs : [
@@ -41,7 +48,7 @@ function (angular, app, _, kbn, moment) {
         {
           title:'Queries',
           src: 'app/partials/querySelect.html'
-        }
+        },
       ],
       status: "Stable",
       description: "A paginated table of records matching your query or queries. Click on a row to "+
@@ -133,6 +140,10 @@ function (angular, app, _, kbn, moment) {
       },
       style   : {'font-size': '9pt'},
       normTimes : true,
+      csv : {
+        header : true,
+        allfields : false
+      }
     };
     _.defaults($scope.panel,_d);
 
@@ -387,6 +398,7 @@ function (angular, app, _, kbn, moment) {
           $scope.get_data(_segment+1,$scope.query_id);
         }
 
+
       });
     };
 
@@ -407,6 +419,8 @@ function (angular, app, _, kbn, moment) {
     $scope.close_edit = function() {
       if($scope.refresh) {
         $scope.get_data();
+      } else {
+        $scope.csv_data = $scope.to_csv();
       }
       $scope.columns = [];
       _.each($scope.panel.fields,function(field) {
@@ -428,6 +442,55 @@ function (angular, app, _, kbn, moment) {
       }
       return obj;
     };
+
+    $scope.$watch('panel.fields', function () {
+      $scope.csv_data = $scope.to_csv();
+    }, true);
+
+    $scope.download_csv = function() {
+      var blob = new Blob([$scope.csv_data], { type: "text/csv" });
+      var timestamp = moment(new Date()).format('YYYYMMDDHHmmss');
+      window.saveAs(blob, dashboard.current.title + "-" + $scope.panel.title + "-" + timestamp + ".csv");
+      return true;
+    };
+
+    $scope.to_csv = function() {
+      var csv = [];
+      var fieldList;
+      if ($scope.panel.csv.allfields) {
+        fieldList = $scope.fields.list;
+      }
+      else {
+        fieldList = $scope.panel.fields;
+      }
+      var allSources = _.pluck($scope.data, 'kibana');
+      if ($scope.panel.csv.header) {
+        csv.push(_.map(fieldList, function (field) {
+          return formatData(field);
+        }).join(","));
+      }
+      _.forEach(allSources, function (event) {
+        csv.push(_.map(fieldList, function (field) {
+          return formatData(event._source[field]);
+        }).join(","));
+      });
+      return csv.join("\n") + "\n";
+    };
+
+    function formatData(input) {
+      if (_.isUndefined(input)) {
+        input = "";
+      } else {
+        input = input.toString();
+      }
+      // replace " with double "
+      var regexp = new RegExp(/["]/g);
+      var output = input.replace(regexp, '""');
+      if (output === "") {
+        return '';
+      }
+      return '"' + output + '"';
+    }
 
 
   });

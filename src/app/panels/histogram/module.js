@@ -43,6 +43,13 @@ function (angular, app, $, _, kbn, moment, timeSeries, numeral) {
           icon: "icon-info-sign",
           partial: "app/partials/inspector.html",
           show: $scope.panel.spyable
+        },
+        {
+          description: "CSV",
+          icon: "icon-table",
+          partial: "app/partials/csv.html",
+          show: true,
+          click: function() { $scope.csv_data = $scope.to_csv(); }
         }
       ],
       editorTabs : [
@@ -506,6 +513,53 @@ function (angular, app, $, _, kbn, moment, timeSeries, numeral) {
           }
         }
       });
+    };
+
+    $scope.to_csv = function() {
+      var headers = [],
+          rows    = {},
+          csv     = [];
+
+      headers.push("time");
+
+      _.each($scope.data, function(series) {
+        headers.push(series.info.alias || series.info.query);
+        _.each(series.data, function(point, row) {
+          if (!rows[row]) {
+            rows[row] = {
+              time   : point[0],
+              values : []
+            };
+          }
+
+          rows[row].values.push(point[1] || 0);
+        });
+
+        rows = _.filter(rows, function(row) {
+          return row.values.length > 0;
+        });
+      });
+
+      csv.push(headers);
+      _.each(rows, function(row) {
+        var values = [];
+
+        values.push(moment(row.time).format('YYYY-MM-DDTHH:mm:ss'));
+        _.each(row.values, function(value) {
+          values.push(value);
+        });
+
+        csv.push(values.join(","));
+      });
+
+      return csv.join("\n") + "\n";
+    };
+
+    $scope.download_csv = function() {
+      var blob = new Blob([$scope.csv_data], { type: "text/csv" });
+      var timestamp = moment(new Date()).format('YYYYMMDDHHmmss');
+      window.saveAs(blob, dashboard.current.title + "-" + $scope.panel.title + "-" + timestamp + ".csv");
+      return true;
     };
 
     // function $scope.zoom
