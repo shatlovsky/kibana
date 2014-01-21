@@ -731,6 +731,7 @@ function (angular, app, $, _, kbn, moment, timeSeries, numeral) {
                 backgroundColor: null,
                 borderWidth: 0,
                 hoverable: true,
+                clickable: true,
                 color: '#c8c8c8'
               }
             };
@@ -857,6 +858,14 @@ function (angular, app, $, _, kbn, moment, timeSeries, numeral) {
               .place_tt(pos.pageX, pos.pageY);
           } else {
             $tooltip.detach();
+          }
+        });
+
+        elem.bind("plotclick", function (event, pos, object) {
+          // filter by the clicked query
+          if(object) {
+            var query = console.log(object.series.info.query);
+            filterSrv.set({type:'querystring',query:object.series.info.query,mandate:'must'});
           }
         });
 
