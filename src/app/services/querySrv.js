@@ -238,7 +238,8 @@ function (angular, _, config, kbn) {
       case 'selected':
         return _.intersection(_.pluck(_.where(dashboard.current.services.query.list,{enable:true}),'id'),config.ids);
       case 'by tags':
-        return _.pluck(_.filter(self.list,function(q){ return _.intersection(config.tags, q.tags).length > 0; }),'id');
+        return _.pluck(_.filter(dashboard.current.services.query.list,
+              function(q){ return _.intersection(config.tags, q.tags).length > 0; }),'id');
       default:
         return _.pluck(_.where(dashboard.current.services.query.list,{enable:true}),'id');
       }
